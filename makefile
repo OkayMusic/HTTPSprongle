@@ -7,21 +7,19 @@ SRC_DIRS = ./src
 
 SRCS := $(shell find $(SRC_DIRS) -name *.c)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.boy)
-DEPS := $(OBJS:.o=.d)
+DEPS := $(OBJS:.boy=.d)
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
-# compile c
-$(BUILD_DIR)/%.c.o: %.c
+# c source
+$(BUILD_DIR)/%.c.boy: %.c
 	$(MKDIR_P) $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 
@@ -30,4 +28,4 @@ clean:
 
 -include $(DEPS)
 
-MKDIR_P ?= mkdir -p
+MKDIR_P = mkdir -p

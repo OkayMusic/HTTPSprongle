@@ -2,5 +2,6 @@
 
 int main()
 {
-    return 0;
+  puts("man");
+  return 0;
 }
