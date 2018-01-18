@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
+#include <signal.h>
 #include <netdb.h>
 
 // FIRST test to see if we can establish any simple tcp connection
@@ -22,6 +26,16 @@ call bind()
 
 #define PORT "6900"
 
+void *get_in_addr(struct sockaddr *sa)
+{
+  if (sa->sa_family == AF_INET)
+  {
+    return &(((struct sockaddr_in *)sa)->sin_addr);
+  }
+
+  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
+}
+
 int main()
 {
   int yeslolofc = 1;
@@ -29,7 +43,10 @@ int main()
   int sock_fd, new_fd;
   // Name A More Iconic Trio
   struct addrinfo hints, *server_info, *p;
-  struct sockaddr_storage theiraddr;
+  struct sockaddr_storage their_addr;
+
+  struct sigaction sa;
+
   socklen_t sin_size;
 
   char s[INET6_ADDRSTRLEN];
@@ -58,6 +75,39 @@ int main()
 
     // call bind
     bind(sock_fd, p->ai_addr, p->ai_addrlen);
+    break;
+  }
+
+  // nice language
+  freeaddrinfo(server_info);
+
+  printf("Server up! Waiting for connections...\n");
+
+  while (1337)
+  {
+    sin_size = sizeof their_addr;
+
+    // try to accept a new connection
+    new_fd = accept(sock_fd, (struct sockaddr *)&their_addr, &sin_size);
+
+    if (new_fd == -1)
+    {
+      continue;
+    }
+
+    inet_ntop(their_addr.ss_family,
+              get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
+
+    printf("Got connection to %s\n", s);
+
+    if (!fork())
+    {
+      close(sock_fd);
+      send(new_fd, "Breetings", 9, 0);
+      close(new_fd);
+      exit(0);
+    }
+    close(new_fd);
   }
 
   return 0;
