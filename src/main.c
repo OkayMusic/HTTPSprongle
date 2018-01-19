@@ -25,7 +25,26 @@ call bind()
 */
 
 #define PORT "6900"
-#define BACKLOG 10
+#define MAX_BOIS 100 // Max clients
+
+int bois[MAX_BOIS];  // Client file descriptors
+
+// Close the connection to the client
+// bois[boi]
+void say_goodbye_to_boi(int boi)
+{
+  if (bois[boi] == -1)
+    return;
+  close(bois[boi]);
+}
+
+// Respond to the client
+// bois[boi]
+void respond_to_boi(int boi)
+{
+  send(bois[boi], "Breetings\n", 9, 0);
+  say_goodbye_to_boi(boi);
+}
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -40,8 +59,15 @@ void *get_in_addr(struct sockaddr *sa)
 int main()
 {
   int yeslolofc = 1;
-  // file descriptor for our socket, fle descriptor for connection socket
-  int sock_fd, new_fd;
+  // file descriptor for our socket
+  int sock_fd;
+  // The current client location in bois
+  int boi = 0;
+
+  // Set all clients to disconnected
+  for (int b=0;b<MAX_BOIS;++b)
+    bois[b] = -1;
+
   // Name A More Iconic Trio
   struct addrinfo hints, *server_info, *p;
   struct sockaddr_storage their_addr;
@@ -87,7 +113,7 @@ int main()
     printf("server failed to bind\n");
   }
 
-  listen(sock_fd, BACKLOG);
+  listen(sock_fd, MAX_BOIS);
 
   printf("Server up! Waiting for connections...\n");
 
@@ -96,9 +122,9 @@ int main()
     sin_size = sizeof their_addr;
 
     // try to accept a new connection
-    new_fd = accept(sock_fd, (struct sockaddr *)&their_addr, &sin_size);
+    bois[boi] = accept(sock_fd, (struct sockaddr *)&their_addr, &sin_size);
 
-    if (new_fd == -1)
+    if (bois[boi] == -1)
     {
       continue;
     }
@@ -108,14 +134,12 @@ int main()
 
     printf("Got connection to %s\n", s);
 
-    if (!fork())
-    {
-      close(sock_fd);
-      send(new_fd, "Breetings", 9, 0);
-      close(new_fd);
-      exit(0);
-    }
-    close(new_fd);
+    if (fork() == 0)
+      respond_to_boi(boi);
+    
+    // Increment the boi until there is a free slot (will hang
+    // if all slots are taken)
+    while(bois[boi]!=-1) boi = (boi+1)%MAX_BOIS;
   }
 
   return 0;
