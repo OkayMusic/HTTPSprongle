@@ -25,6 +25,7 @@ call bind()
 */
 
 #define PORT "6900"
+#define BACKLOG 10
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -80,6 +81,13 @@ int main()
 
   // nice language
   freeaddrinfo(server_info);
+
+  if (p == NULL)
+  {
+    printf("server failed to bind\n");
+  }
+
+  listen(sock_fd, BACKLOG);
 
   printf("Server up! Waiting for connections...\n");
 
