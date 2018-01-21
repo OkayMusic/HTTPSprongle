@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PORT "6900"
+#define PORT "80"
 
 void
 the_feeling_of_rust_against_my_salad_fingers_is_almost_orgasmic(
