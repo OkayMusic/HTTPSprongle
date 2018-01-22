@@ -1,7 +1,14 @@
 The fantastic fabulous HTTP sprongle server horizontally serving you the hottest freshest memes from the sprongle box.
 
+-------------------------------------------------------------------------------
 server must be run as root
 using tmux to run in background
+-------------------------------------------------------------------------------
+
+TODO:
+ - get some important global variables from andre_lukas.conf
+ - implement more of the HTML protocol (only 200 OK works)
+ - css?
 
 /******************************************************************************/
 "It seems... Nettles... have made the milk... drop out... from inside my teat"

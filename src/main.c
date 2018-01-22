@@ -9,11 +9,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include "globals.h"
+#include "httpmessage.h"
 #include "salad_fingers/spoons.h"
-
-#define MAX_BOIS 100 // Max clients
-
-int bois[MAX_BOIS]; // Client file descriptors
 
 // Close the connection to the client
 // bois[boi]
@@ -30,11 +28,21 @@ say_goodbye_to_boi(int boi)
 void
 respond_to_boi(int boi)
 {
-  send(bois[boi], "HTTP/1.1 200 OK\r\nServer: HTTPSprongle\r\nContent-Type: "
-                  "text/html\r\nContent-Length: 20\r\n"
-                  "\r\n"
-                  "<big>Breetings</big>",
-       200, 0);
+  FILE* open_html;
+  const char* filename =
+    "/home/richard/Documents/Sprongle/HTTPSprongle/index.html";
+  open_html = fopen(filename, "r");
+
+  if (open_html == NULL) {
+    perror(filename);
+    exit(1);
+  }
+
+  headers(boi);
+  body(boi, open_html);
+
+  fclose(open_html);
+
   say_goodbye_to_boi(boi);
 }
 
