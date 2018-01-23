@@ -2,5 +2,5 @@
 
 #pragma once
 
-void headers(int boi);
-void body(int boi, FILE* open_html);
+void OK_headers(int boi);
+void OK_body(int boi, FILE* open_html);
