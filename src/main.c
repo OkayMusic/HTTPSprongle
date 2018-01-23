@@ -15,25 +15,25 @@
 
 // Close the connection to the client
 // bois[boi]
-void
-say_goodbye_to_boi(int boi)
+void say_goodbye_to_boi(int boi)
 {
   if (bois[boi] == -1)
     return;
-  close(bois[boi]);
+  if (close(bois[boi]) == -1)
+    perror("Clingyboi");
 }
 
 // Respond to the client
 // bois[boi]
-void
-respond_to_boi(int boi)
+void respond_to_boi(int boi)
 {
-  FILE* open_html;
-  const char* filename =
-    "/home/richard/Documents/Sprongle/HTTPSprongle/index.html";
+  FILE *open_html;
+  const char *filename =
+      "/home/richard/Documents/Sprongle/HTTPSprongle/index.html";
   open_html = fopen(filename, "r");
 
-  if (open_html == NULL) {
+  if (open_html == NULL)
+  {
     perror(filename);
     exit(1);
   }
@@ -46,18 +46,18 @@ respond_to_boi(int boi)
   say_goodbye_to_boi(boi);
 }
 
-void*
-get_in_addr(struct sockaddr* sa)
+void *
+get_in_addr(struct sockaddr *sa)
 {
-  if (sa->sa_family == AF_INET) {
-    return &(((struct sockaddr_in*)sa)->sin_addr);
+  if (sa->sa_family == AF_INET)
+  {
+    return &(((struct sockaddr_in *)sa)->sin_addr);
   }
 
-  return &(((struct sockaddr_in6*)sa)->sin6_addr);
+  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-int
-main()
+int main()
 {
   int sock_fd;
   // The current client location in bois
@@ -72,18 +72,24 @@ main()
 
   // initialize the socket's file descriptor, and listen on that socket
   the_feeling_of_rust_against_my_salad_fingers_is_almost_orgasmic(&sock_fd);
-  listen(sock_fd, MAX_BOIS);
+
+  if (listen(sock_fd, MAX_BOIS) == -1)
+  {
+    perror("Failed to listen on port 80");
+    exit(-1);
+  }
 
   printf("Server up! Waiting for connections...\n");
 
-  while (1337) {
+  while (1337)
+  {
     // try to accept a new connection
-    bois[boi] = accept(sock_fd, (struct sockaddr*)&their_addr, &sin_size);
+    bois[boi] = accept(sock_fd, (struct sockaddr *)&their_addr, &sin_size);
 
     if (bois[boi] == -1)
       continue;
 
-    inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr*)&their_addr),
+    inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr),
               s, sizeof s);
     printf("Got connection to %s\n", s);
 
