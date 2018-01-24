@@ -10,8 +10,7 @@
 This boy deals with serving the HTTP message. There's a good boy.
 *******************************************************************************/
 
-void
-OK_headers(int boi)
+void OK_headers(int boi)
 {
   char buf[1024];
 
@@ -26,11 +25,10 @@ OK_headers(int boi)
     perror("Failed to send third header");
 }
 
-void
-OK_body(int boi, FILE* open_html)
+void OK_body(int boi, FILE *open_html)
 {
   size_t file_len;
-  char* file_contents;
+  char *file_contents;
   char header_end[50];
 
   // first work out the length of the file
@@ -39,10 +37,12 @@ OK_body(int boi, FILE* open_html)
   rewind(open_html);
 
   // now populate file_contents
-  if ((file_contents = (char*)malloc(file_len)) == NULL) {
+  if ((file_contents = (char *)malloc(file_len)) == NULL)
+  {
     perror("Failed to allocate file_contents' memory, HTTP request failed");
   }
-  for (int i = 0; i < file_len; ++i) {
+  for (int i = 0; i < file_len; ++i)
+  {
     fread(file_contents, 1, file_len, open_html);
   }
 
