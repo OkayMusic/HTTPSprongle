@@ -87,7 +87,7 @@ void say_hello_to_boi(int boi, int *msg_type, char (*msg_contents)[4096])
     strcpy(*msg_contents, temp);
 
     // make sure requests end in a '/'
-    if (*msg_contents[strlen(*msg_contents) - 1] != '/')
+    if ((*msg_contents)[strlen(*msg_contents) - 1] != '/')
     {
       strcat(*msg_contents, "/");
     }
