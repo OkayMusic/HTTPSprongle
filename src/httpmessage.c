@@ -45,6 +45,9 @@ void HTML_body(int boi, FILE *open_html)
   char *file_contents;
   char header_end[50];
 
+  if (open_html == NULL)
+    puts("kill yourself");
+
   // first work out the length of the file
   fseek(open_html, 0L, SEEK_END);
   file_len = ftell(open_html);

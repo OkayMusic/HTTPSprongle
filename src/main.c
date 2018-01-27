@@ -23,19 +23,17 @@ void say_goodbye_to_boi(int boi)
 }
 
 // Respond to the client bois[boi]
-void respond_to_boi(int boi, int *msg_type, char **msg_contents)
+void respond_to_boi(int boi, int *msg_type, char (*msg_contents)[4096])
 {
   if (*msg_type == 200)
   {
     FILE *open_html;
-    const char *filename = strcat(path, strcat(*msg_contents, "index.html"));
+    char filename[4096];
+    strcpy(filename, path);
+    strcat(filename, *msg_contents);
+    puts(filename);
 
-    // works if browser requests with or without a trailing intex.html
     open_html = fopen(filename, "r");
-    if (open_html == NULL)
-    {
-      open_html = fopen(strcat(path, *msg_contents), "r");
-    }
 
     // 404 NOT FOUND !!
     if (open_html == NULL)
@@ -63,12 +61,13 @@ void respond_to_boi(int boi, int *msg_type, char **msg_contents)
   }
 }
 
-void say_hello_to_boi(int boi, int *msg_type, char **msg_contents)
+void say_hello_to_boi(int boi, int *msg_type, char (*msg_contents)[4096])
 {
   // ideally the max http request size should be determined in andre_lukas.conf
   // 4096 is long enough for max internet explorer URL, so seems reasonable
   size_t buf_size = 4096;
   ssize_t msg_length;
+  char *temp; // we need this temp boy for strtok
   char buf[buf_size];
 
   msg_length = recv(bois[boi], buf, buf_size, 0);
@@ -82,7 +81,22 @@ void say_hello_to_boi(int boi, int *msg_type, char **msg_contents)
   {
     *msg_type = 200;
     strtok(buf, " ");
-    *msg_contents = strtok(NULL, " ");
+    temp = strtok(NULL, " ");
+
+    // now copy temp over to msg_contents
+    strcpy(*msg_contents, temp);
+
+    // make sure requests end in a '/'
+    if (*msg_contents[strlen(*msg_contents) - 1] != '/')
+    {
+      strcat(*msg_contents, "/");
+    }
+
+    // deal with requests which dont ask for index.html files
+    if (strstr(*msg_contents, "index.html") == NULL)
+    {
+      strcat(*msg_contents, "index.html");
+    }
 
     // haven't yet dealt with favicon requests, so just say goodbye on request
     if (strcasecmp(*msg_contents, "/favicon.ico") == 0)
@@ -105,10 +119,10 @@ void *get_in_addr(struct sockaddr *sa)
 
 int main()
 {
-  int sock_fd;        // serverside socket file descriptor
-  int boi = 0;        // The current client location in bois
-  int msg_type;       // stores the type of message e.g. 200 (OK) etc.
-  char *msg_contents; // buffer for important info relating to message
+  int sock_fd;             // serverside socket file descriptor
+  int boi = 0;             // The current client location in bois
+  int msg_type;            // stores the type of message e.g. 200 (OK) etc.
+  char msg_contents[4096]; // buffer for important info relating to message
 
   // Set all clients to disconnected
   for (int b = 0; b < MAX_BOIS; ++b)
