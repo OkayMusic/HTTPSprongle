@@ -3,4 +3,5 @@
 #pragma once
 
 void OK_headers(int boi);
-void OK_body(int boi, FILE* open_html);
+void NOTFOUND_headers(int boi);
+void HTML_body(int boi, FILE *open_html);

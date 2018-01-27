@@ -23,35 +23,54 @@ void say_goodbye_to_boi(int boi)
 }
 
 // Respond to the client bois[boi]
-void respond_to_boi(int boi, int *msg_type)
+void respond_to_boi(int boi, int *msg_type, char **msg_contents)
 {
   if (*msg_type == 200)
   {
     FILE *open_html;
-    const char *filename =
-        "/home/richard/STORAGE/Documents/misc_programming/Sprongle/HTTPSprongle/index.html";
-    open_html = fopen(filename, "r");
+    const char *filename = strcat(path, strcat(*msg_contents, "index.html"));
 
+    // works if browser requests with or without a trailing intex.html
+    open_html = fopen(filename, "r");
     if (open_html == NULL)
     {
-      perror(filename);
-      exit(1);
+      open_html = fopen(strcat(path, *msg_contents), "r");
     }
 
-    OK_headers(boi);
-    OK_body(boi, open_html);
+    // 404 NOT FOUND !!
+    if (open_html == NULL)
+    {
+      open_html = fopen("NOTFOUND.html", "r");
+      if (open_html == NULL)
+        open_html = fopen("../ NOTFOUND.html", "r");
 
+      if (open_html == NULL)
+      {
+        perror("Couldn't find NOTFOUND.html, pls leave this in HTTPSprongle/");
+        exit(1);
+      }
+
+      NOTFOUND_headers(boi);
+      HTML_body(boi, open_html);
+    }
+    // 200 OK FOUND!
+    else
+    {
+      OK_headers(boi);
+      HTML_body(boi, open_html);
+    }
     fclose(open_html);
   }
 }
 
-void say_hello_to_boi(int boi, int *msg_type)
+void say_hello_to_boi(int boi, int *msg_type, char **msg_contents)
 {
   // ideally the max http request size should be determined in andre_lukas.conf
   // 4096 is long enough for max internet explorer URL, so seems reasonable
   size_t buf_size = 4096;
   ssize_t msg_length;
   char buf[buf_size];
+
   msg_length = recv(bois[boi], buf, buf_size, 0);
 
   if (msg_length == -1)
@@ -60,11 +79,21 @@ void say_hello_to_boi(int boi, int *msg_type)
   else if (msg_length == 0)
     say_goodbye_to_boi(boi);
   else if (strncasecmp(buf, "GET", 3) == 0)
+  {
     *msg_type = 200;
+    strtok(buf, " ");
+    *msg_contents = strtok(NULL, " ");
+
+    // haven't yet dealt with favicon requests, so just say goodbye on request
+    if (strcasecmp(*msg_contents, "/favicon.ico") == 0)
+    {
+      say_goodbye_to_boi(boi);
+      exit(0);
+    }
+  }
 }
 
-void *
-get_in_addr(struct sockaddr *sa)
+void *get_in_addr(struct sockaddr *sa)
 {
   if (sa->sa_family == AF_INET)
   {
@@ -76,11 +105,11 @@ get_in_addr(struct sockaddr *sa)
 
 int main()
 {
-  int sock_fd;
-  // stores the type of message e.g. 200 (OK) 404 (NOT FOUND) etc.
-  int msg_type;
-  // The current client location in bois
-  int boi = 0;
+  int sock_fd;        // serverside socket file descriptor
+  int boi = 0;        // The current client location in bois
+  int msg_type;       // stores the type of message e.g. 200 (OK) etc.
+  char *msg_contents; // buffer for important info relating to message
+
   // Set all clients to disconnected
   for (int b = 0; b < MAX_BOIS; ++b)
     bois[b] = -1;
@@ -91,6 +120,7 @@ int main()
 
   // initialize the socket's file descriptor, and listen on that socket
   the_feeling_of_rust_against_my_salad_fingers_is_almost_orgasmic(&sock_fd);
+  init(); // parse through the config file, setting global variables
 
   if (listen(sock_fd, MAX_BOIS) == -1)
   {
@@ -114,8 +144,8 @@ int main()
 
     if (fork() == 0)
     {
-      say_hello_to_boi(boi, &msg_type);
-      respond_to_boi(boi, &msg_type);
+      say_hello_to_boi(boi, &msg_type, &msg_contents);
+      respond_to_boi(boi, &msg_type, &msg_contents);
       say_goodbye_to_boi(boi);
     }
 

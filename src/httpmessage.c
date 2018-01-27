@@ -25,7 +25,21 @@ void OK_headers(int boi)
     perror("Failed to send third header");
 }
 
-void OK_body(int boi, FILE *open_html)
+void NOTFOUND_headers(int boi)
+{
+  char buf[1024];
+  strcpy(buf, "HTTP/1.1 404 NOT FOUND\r\n");
+  if (send(bois[boi], buf, strlen(buf), 0) == -1)
+    perror("Failed to send first header");
+  strcpy(buf, SERVER);
+  if (send(bois[boi], buf, strlen(buf), 0) == -1)
+    perror("Failed to send second header");
+  strcpy(buf, "Content-Type: text/html\r\n");
+  if (send(bois[boi], buf, strlen(buf), 0) == -1)
+    perror("Failed to send third header");
+}
+
+void HTML_body(int boi, FILE *open_html)
 {
   size_t file_len;
   char *file_contents;
