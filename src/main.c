@@ -156,7 +156,7 @@ int main()
               s, sizeof s);
     printf("Got connection to %s\n", s);
 
-    if (fork() == 0)
+    //if (fork() == 0)
     {
       say_hello_to_boi(boi, &msg_type, &msg_contents);
       respond_to_boi(boi, &msg_type, &msg_contents);
